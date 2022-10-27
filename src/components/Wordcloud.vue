@@ -70,7 +70,7 @@ function download() {
   canvas.toBlob((blob) => {
     const anchor = document.createElement('a');
     anchor.href = URL.createObjectURL(blob);
-    anchor.download = `khmer-group-${new Date().toLocaleDateString()}.png`
+    anchor.download = `khmer-group-${new Date().toLocaleString()}.png`
     anchor.click()
   }, "image/png", 1)
 }
