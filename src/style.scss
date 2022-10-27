@@ -92,3 +92,30 @@ h6 {
 	color: slategray;
 	font-weight: normal;
 }
+
+
+.slate-gap-x-1 {
+	margin: 1em 0;
+}
+
+
+.slate-button {
+	background-color: slateblue;
+	color: white;
+	border: none;
+	box-shadow: 1px 1px 3px rgba(black, .1);
+	font-weight: 500;
+	padding: .4em 1em;
+	border-radius: .3em;
+	
+	transition: .25s ease;
+
+	&:hover {
+		background-color: rgba(slateblue, .95);
+	}
+
+	&:active {
+		background-color: rgba(slateblue, .9);
+	}
+	
+}

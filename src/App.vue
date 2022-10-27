@@ -1,10 +1,13 @@
 <script setup>
+import Wordcloud from './components/Wordcloud.vue';
 import { ref, computed } from 'vue'
 import { toKhmer } from 'khmernumber'
 import { isKhmer } from 'is-khmer'
 
+const scaleRef = ref(8);
+const weightRef = ref(500);
 const text = ref("")
-const intl = new Intl.Segmenter(undefined, { granularity: 'word' });
+const intl = new Intl.Segmenter('km', { granularity: 'word' });
 const segments = computed(
   () => [...intl.segment(text.value)]
     .filter(it => it.isWordLike)
@@ -36,19 +39,35 @@ const segmentsCount = computed(() => {
       </div>
     </div>
 
-    <h2>លទ្ធផល</h2>
+
+    <h2 v-if="segmentsCount.length">ពពកពាក្យ</h2>
+    
+    <div class="slate-column" v-if="segmentsCount.length">
+      <label for="scale">មាត្រដ្ឋាន <strong>{{ scaleRef }}</strong></label>
+      <input id="scale" name="scale" v-model="scaleRef" min="1" max="30" type="range" style="accent-color: slateblue;">
+      <br>
+      <label for="weight">កម្រាស់អក្សរ <strong>{{weightRef}}</strong></label>
+      <input id="weight" name="weight" v-model="weightRef" min="300" max="800" type="range" style="accent-color: slateblue;">
+    </div>
+    
+    <div v-if="segmentsCount.length" >
+      <Wordcloud :weight="weightRef" :scale="scaleRef" :values="segmentsCount" />
+    </div>
+
+    
+
+    <h3>ចំនួនដងនៃពាក្យ</h3>
     <div v-if="segmentsCount.length" class="slate-card">
       <ul class="slate-ul">
         <li v-for="(item, index) in segmentsCount" :key="index">
-          <span class="slate-key">{{toKhmer((index + 1).toString())}}</span>
-          <span>{{item[0]}}</span>
-          <span class="slate-counter">{{toKhmer(item[1].toString())}}</span>
+          <span class="slate-key">{{ toKhmer((index + 1).toString()) }}</span>
+          <span>{{ item[0] }}</span>
+          <span class="slate-counter">{{ toKhmer(item[1].toString()) }}</span>
         </li>
       </ul>
     </div>
     <div v-else class="slate-card">
       <p class="slate-info">សូមវាយអ្វីមួយ</p>
     </div>
-
   </div>
 </template>
