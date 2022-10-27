@@ -1,13 +1,21 @@
 <script setup>
-import Wordcloud from './components/Wordcloud.vue';
-import { ref, computed } from 'vue'
+import pako from 'pako'
+import { useRoute, useRouter } from 'vue-router'
+import Wordcloud from '../components/Wordcloud.vue';
+import { watch, ref, computed, watchEffect } from 'vue'
 import { toKhmer } from 'khmernumber'
 import { isKhmer } from 'is-khmer'
+import { Base64 } from 'js-base64'
 
-const scaleRef = ref(8);
-const weightRef = ref(500);
-const text = ref("")
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+const router = useRouter();
+const route = useRoute()
+const scaleRef = ref(parseInt(route.query.s, 16) || 8);
+const weightRef = ref(parseInt(route.query.w, 16) || 500);
+const text = ref(decodeAndInflate())
 const intl = new Intl.Segmenter('km', { granularity: 'word' });
+
 const segments = computed(
   () => [...intl.segment(text.value)]
     .filter(it => it.isWordLike)
@@ -27,6 +35,51 @@ const segmentsCount = computed(() => {
   return entries
 });
 
+
+function decodeAndInflate() {
+  if (route.query.data) {
+    try {
+      const bytes = pako.inflate(Base64.toUint8Array(route.query.data));
+      return textDecoder.decode(bytes);
+    } catch (e) {
+      console.error('failed to decode');
+      console.error(e);
+    }
+  }
+  return '';
+}
+
+watch(text, async () => {
+  const value = text.value.trim();
+  const bytes = textEncoder.encode(value);
+  const compressedBase64 = Base64.fromUint8Array(pako.deflate(bytes));
+  await router.replace({
+    query: {
+      ...route.query,
+      data: compressedBase64,
+    },
+  });
+})
+
+watch(scaleRef, async () => {
+  router.replace({ 
+    query: {
+      ...route.query,
+      s: new Number(scaleRef.value).toString(16)
+    }
+  })
+});
+
+watch(weightRef, async () => {
+  router.replace({ 
+    query: {
+      ...route.query,
+      w: new Number(weightRef.value).toString(16)
+    }
+  })
+});
+
+
 </script>
 
 <template>
@@ -41,20 +94,21 @@ const segmentsCount = computed(() => {
 
 
     <h2 v-if="segmentsCount.length">ពពកពាក្យ</h2>
-    
+
     <div class="slate-column" v-if="segmentsCount.length">
       <label for="scale">មាត្រដ្ឋាន <strong>{{ scaleRef }}</strong></label>
       <input id="scale" name="scale" v-model="scaleRef" min="1" max="30" type="range" style="accent-color: slateblue;">
       <br>
-      <label for="weight">កម្រាស់អក្សរ <strong>{{weightRef}}</strong></label>
-      <input id="weight" name="weight" v-model="weightRef" min="300" max="800" type="range" style="accent-color: slateblue;">
+      <label for="weight">កម្រាស់អក្សរ <strong>{{ weightRef }}</strong></label>
+      <input id="weight" name="weight" v-model="weightRef" min="300" max="800" type="range"
+        style="accent-color: slateblue;">
     </div>
-    
-    <div v-if="segmentsCount.length" >
+
+    <div v-if="segmentsCount.length">
       <Wordcloud :weight="weightRef" :scale="scaleRef" :values="segmentsCount" />
     </div>
 
-    
+
 
     <h3>ចំនួនដងនៃពាក្យ</h3>
     <div v-if="segmentsCount.length" class="slate-card">
