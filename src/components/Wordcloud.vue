@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { randomContent } from '../data.js';
 import wordcloud from './wordcloud.js'
 
 // definitions
@@ -83,7 +84,3 @@ function download() {
     <canvas class="board" ref="boardRef"></canvas>
   </div>
 </template>
-
-<style lang="scss">
-.board {}
-</style>

@@ -13,6 +13,7 @@
     "js-base64": "^3.7.2",
     "khmernumber": "^0.1.0",
     "pako": "^2.0.4",
+    "string-strip-html": "^11.6.17",
     "vue": "^3.2.37",
     "vue-router": "^4.1.6"
   },

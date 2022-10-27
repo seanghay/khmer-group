@@ -6,7 +6,9 @@ import { watch, ref, computed, watchEffect } from 'vue'
 import { toKhmer } from 'khmernumber'
 import { isKhmer } from 'is-khmer'
 import { Base64 } from 'js-base64'
+import { randomContent } from '../data.js';
 
+const isFetching = ref(false);
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 const router = useRouter();
@@ -79,6 +81,17 @@ watch(weightRef, async () => {
   })
 });
 
+async function request() {
+  isFetching.value = true;
+  try {
+    const str = await randomContent();
+    text.value = str;
+  } catch(e) {
+    console.error(e)
+  } finally {
+    isFetching.value = false;
+  }
+}
 
 </script>
 
@@ -86,12 +99,13 @@ watch(weightRef, async () => {
   <div class="container">
     <h1>ក្រុម​ពាក្យ​ខ្មែរ</h1>
     <p>ចែកពាក្យខ្មែរជាក្រុមៗ</p>
+    
     <div class="slate-card">
       <div class="slate-column">
         <textarea placeholder="សូមវាយអ្វីមួយ" class="slate-textarea" v-model="text" rows="10"></textarea>
       </div>
     </div>
-
+    <button :disabled="isFetching" class="slate-button slate-gap-x-1" @click="request">ទិន្នន័យពីសារព័ត៌មាន</button>
 
     <h2 v-if="segmentsCount.length">ពពកពាក្យ</h2>
 
@@ -107,8 +121,6 @@ watch(weightRef, async () => {
     <div v-if="segmentsCount.length">
       <Wordcloud :weight="weightRef" :scale="scaleRef" :values="segmentsCount" />
     </div>
-
-
 
     <h3>ចំនួនដងនៃពាក្យ</h3>
     <div v-if="segmentsCount.length" class="slate-card">
